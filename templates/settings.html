@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - AlgoGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2>AlgoGuard AI</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('settings') }}" class="nav-link active">
+                    <span class="icon">⚙️</span> Settings
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-link logout">
+                    <span class="icon">🚪</span> Logout
+                </a>
+            </nav>
+            <div class="sidebar-user">
+                <p class="user-name">{{ current_user.username }}</p>
+                <small class="user-email">{{ current_user.email }}</small>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Settings</h1>
+                </div>
+            </header>
+
+            <!-- Main Container -->
+            <div class="container">
+                {% if success %}
+                <div class="alert alert-success">
+                    ✓ {{ success }}
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <div class="alert alert-error">
+                    ✗ {{ error }}
+                </div>
+                {% endif %}
+
+                <!-- Account Settings -->
+                <div class="settings-section">
+                    <h2>Account Information</h2>
+                    <form method="POST" class="settings-form">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                value="{{ current_user.username }}" 
+                                disabled 
+                                class="input-disabled"
+                            >
+                            <small>Username cannot be changed</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                value="{{ current_user.email }}" 
+                                disabled 
+                                class="input-disabled"
+                            >
+                            <small>Email cannot be changed at the moment</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="created">Member Since</label>
+                            <input 
+                                type="text" 
+                                id="created" 
+                                value="{{ current_user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" 
+                                disabled 
+                                class="input-disabled"
+                            >
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Algorand Settings -->
+                <div class="settings-section">
+                    <h2>Algorand Configuration</h2>
+                    <form method="POST" class="settings-form">
+                        <div class="form-group">
+                            <label for="algo_address">Algorand Address</label>
+                            <input 
+                                type="text" 
+                                id="algo_address" 
+                                name="algo_address" 
+                                value="{{ current_user.algo_address or '' }}" 
+                                placeholder="Paste your 58-character Algorand address"
+                                required
+                            >
+                            <small>Enter your Algorand testnet or mainnet address to start monitoring</small>
+                        </div>
+
+                        <div class="address-info">
+                            <h4>Address Format</h4>
+                            <p>A valid Algorand address is exactly 58 characters long and starts with a letter (A-Z).</p>
+                            <p><strong>Example:</strong> M5VOM4OO5PC54SDVXPSPKLZCTACLSZBA4H3LLCSWPK25KV42YZFMFGV4UU</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Algorand Address</button>
+                    </form>
+                </div>
+
+                <!-- Monitoring Status -->
+                <div class="settings-section">
+                    <h2>Monitoring Status</h2>
+                    <div class="status-info">
+                        {% if current_user.algo_address %}
+                        <div class="status-item">
+                            <span class="status-label">Current Address:</span>
+                            <code class="status-value">{{ current_user.algo_address }}</code>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Monitoring:</span>
+                            <span class="status-badge status-enabled">Active</span>
+                        </div>
+                        {% else %}
+                        <div class="no-address">
+                            <p>No Algorand address configured. Configure one above to start monitoring.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="settings-section info-section">
+                    <h2>About AlgoGuard AI</h2>
+                    <div class="info-content">
+                        <p><strong>AlgoGuard AI</strong> is an intelligent Algorand blockchain monitoring dashboard that tracks your wallet balance, ALGO price, and market metrics in real-time.</p>
+                        
+                        <h3>Features</h3>
+                        <ul>
+                            <li>Real-time Algorand account monitoring</li>
+                            <li>Live ALGO price tracking (USD)</li>
+                            <li>Market cap monitoring</li>
+                            <li>AI-powered risk detection and alerts</li>
+                            <li>Historical data visualization with charts</li>
+                            <li>Multi-user support with account isolation</li>
+                        </ul>
+
+                        <h3>Data Sources</h3>
+                        <ul>
+                            <li><strong>Blockchain:</strong> Algorand Testnet/Mainnet via AlgoNode</li>
+                            <li><strong>Price Data:</strong> Binance API</li>
+                            <li><strong>Market Data:</strong> CoinGecko API</li>
+                        </ul>
+
+                        <h3>Security</h3>
+                        <ul>
+                            <li>Passwords are hashed and securely stored</li>
+                            <li>Each user can only access their own data</li>
+                            <li>No private keys or sensitive data stored</li>
+                            <li>Read-only blockchain access</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AlgoGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2>AlgoGuard AI</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link active">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('settings') }}" class="nav-link">
+                    <span class="icon">⚙️</span> Settings
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-link logout">
+                    <span class="icon">🚪</span> Logout
+                </a>
+            </nav>
+            <div class="sidebar-user">
+                <p class="user-name">{{ current_user.username }}</p>
+                <small class="user-email">{{ current_user.email }}</small>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="price-display">
+                        <span class="label">ALGO Price:</span>
+                        <span class="price" id="header-price">$0.00</span>
+                    </div>
+                    <div class="sync-status">
+                        <span class="status-dot pulse"></span>
+                        <span id="sync-text">Synchronizing...</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Container -->
+            <div class="container">
+                <!-- Status Section -->
+                {% if current_user.algo_address %}
+                <div class="status-section">
+                    <h2>Your Algorand Account</h2>
+                    <p class="account-address">Address: <code>{{ current_user.algo_address }}</code></p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🔄</div>
+                        <div class="stat-content">
+                            <h3>Round</h3>
+                            <p class="stat-value" id="round">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <h3>ALGO Balance</h3>
+                            <p class="stat-value" id="balance">0.00 ALGO</p>
+                            <small id="balance-usd">$0.00 USD</small>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">💵</div>
+                        <div class="stat-content">
+                            <h3>ALGO Price</h3>
+                            <p class="stat-value" id="price">$0.00</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <h3>Market Cap</h3>
+                            <p class="stat-value" id="market-cap">$0.00</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-content">
+                            <h3>Risk Score</h3>
+                            <p class="stat-value" id="risk-score">Safe</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="chart-section">
+                    <h2>Price History</h2>
+                    <canvas id="priceChart"></canvas>
+                </div>
+
+                <!-- Alerts Section -->
+                <div class="alerts-section">
+                    <h2>AI Alerts</h2>
+                    <div class="alerts-container" id="alerts-container">
+                        <div class="alert-empty">No alerts at the moment</div>
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                <div class="history-section">
+                    <h2>Balance History</h2>
+                    <div class="history-container" id="history-container">
+                        <p class="history-empty">No history available yet</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="setup-message">
+                    <h2>Setup Required</h2>
+                    <p>Please configure your Algorand address in <a href="{{ url_for('settings') }}">Settings</a> to start monitoring.</p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let priceChart = null;
+        
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/user-status');
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('sync-text').textContent = 'Setup Required';
+                    return;
+                }
+                
+                // Update Round
+                document.getElementById('round').textContent = data.round || '0';
+                
+                // Update Balance
+                const balance = (data.algo_balance || 0).toFixed(2);
+                const balanceUsd = (data.balance_value_usd || 0).toFixed(2);
+                document.getElementById('balance').textContent = balance + ' ALGO';
+                document.getElementById('balance-usd').textContent = '$' + balanceUsd + ' USD';
+                
+                // Update Price
+                const price = (data.algo_price || 0).toFixed(4);
+                document.getElementById('price').textContent = '$' + price;
+                document.getElementById('header-price').textContent = '$' + price;
+                
+                // Update Market Cap
+                const marketCap = data.market_cap || 0;
+                let marketCapDisplay = '$0.00';
+                if (marketCap >= 1e9) {
+                    marketCapDisplay = '$' + (marketCap / 1e9).toFixed(2) + 'B';
+                } else if (marketCap >= 1e6) {
+                    marketCapDisplay = '$' + (marketCap / 1e6).toFixed(2) + 'M';
+                } else if (marketCap > 0) {
+                    marketCapDisplay = '$' + marketCap.toFixed(0);
+                }
+                document.getElementById('market-cap').textContent = marketCapDisplay;
+                
+                // Update Risk Score
+                const riskScore = data.risk_score || 0;
+                let riskText = 'Safe';
+                if (riskScore >= 70) {
+                    riskText = 'High Risk';
+                } else if (riskScore >= 50) {
+                    riskText = 'Warning';
+                }
+                document.getElementById('risk-score').textContent = riskText + ' (' + riskScore + ')';
+                
+                // Update Alerts
+                updateAlerts(data.alerts || []);
+                
+                // Update History
+                updateHistory(data.history || []);
+                
+                // Update Sync Status
+                document.getElementById('sync-text').textContent = 'Synced';
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('sync-text').textContent = 'Sync Error';
+            }
+        }
+        
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-container');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="alert-empty">No alerts at the moment</div>';
+                return;
+            }
+            
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert-item alert-${alert.severity.toLowerCase()}">
+                    <span class="alert-severity">${alert.severity}</span>
+                    <span class="alert-message">${alert.msg}</span>
+                    <span class="alert-time">${new Date(alert.timestamp * 1000).toLocaleTimeString()}</span>
+                </div>
+            `).join('');
+        }
+        
+        function updateHistory(history) {
+            const container = document.getElementById('history-container');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<p class="history-empty">No history available yet</p>';
+                return;
+            }
+            
+            container.innerHTML = history.map((h, i) => `
+                <div class="history-item">
+                    <span class="history-index">${i + 1}</span>
+                    <span class="history-balance">${h.balance.toFixed(2)} ALGO</span>
+                    <span class="history-price">@ $${h.price.toFixed(4)}</span>
+                    <span class="history-time">${new Date(h.timestamp * 1000).toLocaleTimeString()}</span>
+                </div>
+            `).join('');
+        }
+        
+        async function updatePriceChart() {
+            try {
+                const response = await fetch('/api/price-history');
+                const data = await response.json();
+                
+                if (!data || data.length === 0) {
+                    return;
+                }
+                
+                const labels = data.map(d => new Date(d.timestamp * 1000).toLocaleTimeString());
+                const prices = data.map(d => d.price);
+                
+                const ctx = document.getElementById('priceChart').getContext('2d');
+                
+                if (priceChart) {
+                    priceChart.destroy();
+                }
+                
+                priceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'ALGO Price (USD)',
+                            data: prices,
+                            borderColor: '#00d4ff',
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#00d4ff',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: '#a0a0a0'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                grid: {
+                                    color: '#1a1a1a'
+                                },
+                                ticks: {
+                                    color: '#a0a0a0'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: '#1a1a1a'
+                                },
+                                ticks: {
+                                    color: '#a0a0a0'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching price history:', error);
+            }
+        }
+        
+        // Initial fetch and set up polling
+        fetchData();
+        updatePriceChart();
+        
+        setInterval(fetchData, 3000);
+        setInterval(updatePriceChart, 30000);
+    </script>
+</body>
+</html>

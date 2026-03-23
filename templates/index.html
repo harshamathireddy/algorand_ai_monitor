@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorand AI Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">ALGO<span>GUARD AI</span></h1>
+            <div class="price-display">
+                <span class="price-label">Current Price:</span>
+                <span id="header-price" class="price-value">$0.0000</span>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Mainnet Synced</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p class="stat-label">Algorand Round</p>
+                <p id="round" class="stat-value loading">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">ALGO Balance</p>
+                <p id="balance" class="stat-value">0.00 ALGO</p>
+                <p id="balance-usd" class="stat-subvalue">$0.00 USD</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">ALGO Price</p>
+                <p id="price" class="stat-value">$0.00</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Market Cap</p>
+                <p id="market-cap" class="stat-value">$0.00B</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">AI Risk Score</p>
+                <p id="risk" class="stat-value">Safe</p>
+            </div>
+        </div>
+
+        <div class="alerts-section">
+            <h2>Autonomous Alerts</h2>
+            <div id="alert-list" class="alerts-list">
+                <!-- Alerts will be inserted here -->
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h2>ALGO Price History</h2>
+            <canvas id="priceChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="history-section">
+            <h2>Balance History</h2>
+            <div id="history-list" class="history-list">
+                <!-- History will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let priceChart;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                console.log("API Response:", data);
+                
+                // Update Round
+                document.getElementById('round').innerText = data.round || "N/A";
+                document.getElementById('round').classList.remove('loading');
+                
+                // Update Balance
+                const balance = data.algo_balance || 0;
+                document.getElementById('balance').innerText = balance.toFixed(2) + " ALGO";
+                document.getElementById('balance-usd').innerText = "$" + (data.balance_value_usd || 0).toFixed(2) + " USD";
+                
+                // Update Price
+                const price = data.algo_price || 0;
+                const priceText = "$" + price.toFixed(4);
+                document.getElementById('price').innerText = priceText;
+                document.getElementById('header-price').innerText = priceText;
+                console.log("Price updated to:", priceText);
+                
+                // Update Market Cap
+                const marketCap = data.market_cap || 0;
+                let marketCapDisplay = "$0.00";
+                if (marketCap >= 1e9) {
+                    marketCapDisplay = "$" + (marketCap / 1e9).toFixed(2) + "B";
+                } else if (marketCap >= 1e6) {
+                    marketCapDisplay = "$" + (marketCap / 1e6).toFixed(2) + "M";
+                } else if (marketCap > 0) {
+                    marketCapDisplay = "$" + marketCap.toFixed(0);
+                }
+                document.getElementById('market-cap').innerText = marketCapDisplay;
+                console.log("Market Cap updated to:", marketCapDisplay);
+                
+                // Update Risk Score
+                const riskEl = document.getElementById('risk');
+                if (data.risk_score > 50) {
+                    riskEl.innerText = "High Risk";
+                    riskEl.className = "stat-value high-risk";
+                } else {
+                    riskEl.innerText = "Safe";
+                    riskEl.className = "stat-value";
+                }
+                
+                // Update Alerts
+                const alertContainer = document.getElementById('alert-list');
+                const alerts = data.alerts || [];
+                if (alerts.length === 0) {
+                    alertContainer.innerHTML = '<div style="padding: 1rem; color: #00ff88; text-align: center;">✓ No alerts - All systems normal</div>';
+                } else {
+                    alertContainer.innerHTML = alerts.map(a => `
+                        <div class="alert-item">
+                            <span class="alert-content">⚠️ ${a.msg}</span>
+                            <span class="alert-timestamp">Real-time Detection</span>
+                        </div>
+                    `).join('');
+                }
+                
+                // Update History
+                const historyContainer = document.getElementById('history-list');
+                const history = data.history || [];
+                if (history.length === 0) {
+                    historyContainer.innerHTML = '<div style="padding: 1rem; color: #b0b0b0; text-align: center;">Waiting for history data...</div>';
+                } else {
+                    historyContainer.innerHTML = history.slice(-10).reverse().map(h => {
+                        const date = new Date(h.timestamp * 1000).toLocaleString();
+                        return `
+                            <div class="history-item">
+                                <span class="history-timestamp">${date}</span>
+                                <span class="history-balance">${(h.balance || 0).toFixed(2)} ALGO @ $${(h.price || 0).toFixed(4)}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                // Update Price Chart
+                const priceHistory = data.price_history || [];
+                if (priceHistory.length > 0) {
+                    updatePriceChart(priceHistory);
+                }
+            } catch (e) { 
+                console.error("Update failed", e);
+                document.getElementById('header-price').innerText = "Error loading price";
+            }
+        }
+
+        function updatePriceChart(priceHistory) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            
+            const labels = priceHistory.map(h => new Date(h.timestamp * 1000).toLocaleTimeString());
+            const prices = priceHistory.map(h => h.price || 0);
+            
+            if (priceChart) {
+                priceChart.data.labels = labels;
+                priceChart.data.datasets[0].data = prices;
+                priceChart.update();
+            } else {
+                priceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'ALGO Price (USD)',
+                            data: prices,
+                            borderColor: '#00d4ff',
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    color: '#404040'
+                                },
+                                ticks: {
+                                    color: '#b0b0b0',
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(4);
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: '#404040'
+                                },
+                                ticks: {
+                                    color: '#b0b0b0',
+                                    maxTicksLimit: 10
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#ffffff'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Fetch data immediately and then every 3 seconds
+        fetchData();
+        setInterval(fetchData, 3000);
+    </script>
+</body>
+</html>

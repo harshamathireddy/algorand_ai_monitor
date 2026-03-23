@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Server Error</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header" style="text-align: center;">
+                <h1 style="font-size: 64px; margin-bottom: 20px;">500</h1>
+                <h2>Server Error</h2>
+                <p>Something went wrong on our end. Please try again later.</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="display: inline-block; text-decoration: none; padding: 12px 30px;">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
