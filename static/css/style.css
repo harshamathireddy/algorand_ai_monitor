@@ -46,6 +46,8 @@ body {
     overflow-y: auto;
     z-index: 100;
     box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-logo {
@@ -69,6 +71,7 @@ body {
     flex-direction: column;
     gap: 10px;
     margin-bottom: 40px;
+    flex: 1;
 }
 
 .nav-link {
@@ -101,7 +104,7 @@ body {
 }
 
 .nav-link.logout {
-    margin-top: 20px;
+    margin-top: auto;
     color: var(--accent-red);
 }
 
@@ -110,21 +113,29 @@ body {
 }
 
 .sidebar-user {
-    border-top: 2px solid rgba(0, 212, 255, 0.1);
-    padding-top: 20px;
-    margin-top: 20px;
+    display: none;
 }
 
 .user-name {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 6px;
-    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0;
+    color: var(--accent-orange);
 }
 
 .user-email {
     color: var(--text-secondary);
     font-size: 12px;
+    margin: 0;
+}
+
+.user-member {
+    font-size: 11px;
+    color: var(--accent-gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
 }
 
 /* Main Content */
@@ -209,6 +220,60 @@ body {
     50% {
         opacity: 0.5;
     }
+}
+
+/* Header Profile */
+.header-profile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, rgba(255, 140, 66, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+    border: 2px solid rgba(255, 140, 66, 0.2);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.header-profile:hover {
+    background: linear-gradient(135deg, rgba(255, 140, 66, 0.15) 0%, rgba(255, 215, 0, 0.08) 100%);
+    border-color: rgba(255, 140, 66, 0.35);
+}
+
+.header-profile-avatar {
+    font-size: 32px;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, rgba(255, 140, 66, 0.2), rgba(255, 215, 0, 0.15));
+    border: 2px solid rgba(255, 140, 66, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.header-profile:hover .header-profile-avatar {
+    border-color: rgba(255, 140, 66, 0.5);
+    background: linear-gradient(135deg, rgba(255, 140, 66, 0.25), rgba(255, 215, 0, 0.2));
+}
+
+.header-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.header-user-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-orange);
+    margin: 0;
+}
+
+.header-user-email {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
 }
 
 /* Container */
@@ -358,23 +423,49 @@ body {
 
 /* Chart Section */
 .chart-section {
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 183, 77, 0.05) 100%);
-    border: 2px solid rgba(255, 183, 77, 0.15);
-    border-radius: 14px;
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 140, 66, 0.08) 100%);
+    border: 2px solid rgba(255, 140, 66, 0.2);
+    border-radius: 16px;
+    padding: 35px;
+    margin-bottom: 35px;
+    box-shadow: 0 8px 32px rgba(255, 140, 66, 0.15);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.chart-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff8c42, transparent);
+    opacity: 0.5;
+}
+
+.chart-section:hover {
+    border-color: rgba(255, 140, 66, 0.35);
+    box-shadow: 0 12px 48px rgba(255, 140, 66, 0.2);
 }
 
 .chart-section h2 {
+    margin-bottom: 10px;
+    font-size: 22px;
+    color: var(--accent-orange);
+    font-weight: 700;
+}
+
+.chart-section p {
+    color: var(--text-secondary);
+    font-size: 13px;
     margin-bottom: 25px;
-    font-size: 20px;
-    color: var(--accent-gold);
-    font-weight: 600;
 }
 
 #priceChart {
-    max-height: 400px;
+    max-height: 450px;
+    min-height: 350px;
 }
 
 /* Alerts Section */

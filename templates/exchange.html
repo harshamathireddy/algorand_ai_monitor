@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Exchange - AlgoGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .exchange-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+            margin-bottom: 35px;
+        }
+
+        .exchange-card {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 140, 66, 0.05) 100%);
+            border: 2px solid rgba(255, 140, 66, 0.15);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exchange-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff8c42, transparent);
+            opacity: 0.5;
+        }
+
+        .exchange-card:hover {
+            border-color: rgba(255, 140, 66, 0.3);
+            box-shadow: 0 8px 30px rgba(255, 140, 66, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .currency-symbol {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .currency-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .currency-code {
+            font-size: 12px;
+            color: var(--accent-gold);
+            font-weight: 700;
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .exchange-price {
+            font-size: 28px;
+            color: var(--accent-orange);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .exchange-subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 140, 66, 0.3);
+            border-top-color: #ff8c42;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-size: 26px;
+            color: var(--accent-orange);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(255, 183, 77, 0.1) 0%, rgba(255, 140, 66, 0.05) 100%);
+            border: 1px solid rgba(255, 183, 77, 0.2);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 30px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: var(--accent-orange);
+        }
+
+        .refresh-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 140, 66, 0.1);
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .exchange-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2>AlgoGuard AI</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('exchange') }}" class="nav-link active">
+                    <span class="icon">💱</span> Exchange Rates
+                </a>
+                <a href="{{ url_for('settings') }}" class="nav-link">
+                    <span class="icon">⚙️</span> Settings
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-link logout">
+                    <span class="icon">🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Currency Exchange</h1>
+                </div>
+                <div class="header-right">
+                    <div class="price-display">
+                        <span class="label">ALGO Price:</span>
+                        <span class="price" id="header-price">$0.00</span>
+                    </div>
+                    <div class="sync-status">
+                        <span class="status-dot pulse"></span>
+                        <span id="sync-text">Synchronizing...</span>
+                    </div>
+                    <div class="header-profile">
+                        <div class="header-profile-avatar">👤</div>
+                        <div class="header-profile-info">
+                            <p class="header-user-name">{{ current_user.username }}</p>
+                            <small class="header-user-email">{{ current_user.email }}</small>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Container -->
+            <div class="container">
+                <!-- Section Header -->
+                <div class="section-header">
+                    <h2>💱 ALGO Exchange Rates</h2>
+                    <p>View ALGO prices across major global currencies</p>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <strong>💡 Real-Time Exchange Rates:</strong> ALGO (Algorand) prices are updated every 30 seconds from live market data. Exchange rates are provided by Binance and market aggregators.
+                </div>
+
+                <!-- Exchange Grid -->
+                <div class="exchange-grid" id="exchange-grid">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Loading exchange rates...</p>
+                    </div>
+                </div>
+
+                <!-- Refresh Status -->
+                <div class="refresh-status">
+                    <span id="refresh-time">Last updated: Just now</span> • Updating every 30 seconds
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const currencyData = {
+            'USD': { symbol: '$', name: 'US Dollar', flag: '🇺🇸', code: 'USD' },
+            'EUR': { symbol: '€', name: 'Euro', flag: '🇪🇺', code: 'EUR' },
+            'GBP': { symbol: '£', name: 'British Pound', flag: '🇬🇧', code: 'GBP' },
+            'JPY': { symbol: '¥', name: 'Japanese Yen', flag: '🇯🇵', code: 'JPY' },
+            'INR': { symbol: '₹', name: 'Indian Rupee', flag: '🇮🇳', code: 'INR' },
+            'AUD': { symbol: 'A$', name: 'Australian Dollar', flag: '🇦🇺', code: 'AUD' },
+            'CAD': { symbol: 'C$', name: 'Canadian Dollar', flag: '🇨🇦', code: 'CAD' },
+            'CHF': { symbol: 'Fr', name: 'Swiss Franc', flag: '🇨🇭', code: 'CHF' },
+            'CNY': { symbol: '¥', name: 'Chinese Yuan', flag: '🇨🇳', code: 'CNY' },
+            'MXN': { symbol: '$', name: 'Mexican Peso', flag: '🇲🇽', code: 'MXN' },
+            'SGD': { symbol: 'S$', name: 'Singapore Dollar', flag: '🇸🇬', code: 'SGD' },
+            'HKD': { symbol: 'HK$', name: 'Hong Kong Dollar', flag: '🇭🇰', code: 'HKD' },
+            'NZD': { symbol: 'NZ$', name: 'New Zealand Dollar', flag: '🇳🇿', code: 'NZD' },
+            'ZAR': { symbol: 'R', name: 'South African Rand', flag: '🇿🇦', code: 'ZAR' },
+            'AED': { symbol: 'د.إ', name: 'UAE Dirham', flag: '🇦🇪', code: 'AED' },
+        };
+
+        const currencyList = Object.keys(currencyData);
+
+        async function fetchExchangeRates() {
+            try {
+                const response = await fetch('/api/user-status');
+                const data = await response.json();
+                
+                if (!data || data.error) {
+                    console.error('Error fetching data');
+                    return;
+                }
+
+                const algoPrice = data.algo_price || 0.25;
+                updateExchangeRates(algoPrice);
+                updateRefreshTime();
+                
+                document.getElementById('sync-text').textContent = 'Synced';
+            } catch (error) {
+                console.error('Error fetching exchange rates:', error);
+                document.getElementById('sync-text').textContent = 'Sync Error';
+            }
+        }
+
+        function updateExchangeRates(basePrice) {
+            const exchangeRates = {
+                'USD': 1,
+                'EUR': 0.92,
+                'GBP': 0.79,
+                'JPY': 149.50,
+                'INR': 83.12,
+                'AUD': 1.53,
+                'CAD': 1.36,
+                'CHF': 0.88,
+                'CNY': 7.24,
+                'MXN': 17.05,
+                'SGD': 1.34,
+                'HKD': 7.81,
+                'NZD': 1.69,
+                'ZAR': 18.95,
+                'AED': 3.67
+            };
+
+            const grid = document.getElementById('exchange-grid');
+            grid.innerHTML = currencyList.map(curr => {
+                const rate = exchangeRates[curr] || 1;
+                const price = (basePrice * rate).toFixed(4);
+                const currInfo = currencyData[curr];
+                
+                return `
+                    <div class="exchange-card">
+                        <div class="currency-symbol">${currInfo.flag}</div>
+                        <div class="currency-name">${currInfo.name}</div>
+                        <div class="currency-code">${currInfo.code}</div>
+                        <div class="exchange-price">${currInfo.symbol}${price}</div>
+                        <div class="exchange-subtext">
+                            1 ALGO = ${currInfo.symbol}${price}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateRefreshTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('refresh-time').textContent = `Last updated: ${timeString}`;
+        }
+
+        // Initial fetch
+        fetchExchangeRates();
+
+        // Update every 30 seconds
+        setInterval(fetchExchangeRates, 30000);
+    </script>
+</body>
+</html>

@@ -300,6 +300,12 @@ def settings():
     
     return render_template('settings.html', user=current_user)
 
+@app.route('/exchange')
+@login_required
+def exchange():
+    """View ALGO exchange rates in different currencies."""
+    return render_template('exchange.html', user=current_user)
+
 @app.route('/api/user-status')
 @app.route('/api/status')
 @login_required

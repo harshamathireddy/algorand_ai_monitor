@@ -5,6 +5,200 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - AlgoGuard AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .settings-card {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 140, 66, 0.05) 100%);
+            border: 2px solid rgba(255, 140, 66, 0.15);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .settings-card:hover {
+            border-color: rgba(255, 140, 66, 0.3);
+            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .settings-card h3 {
+            font-size: 18px;
+            color: var(--accent-orange);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .info-row {
+            padding: 14px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 140, 66, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .info-row:hover {
+            border-color: rgba(255, 140, 66, 0.2);
+            background: rgba(255, 140, 66, 0.03);
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: var(--text-primary);
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 2px solid rgba(255, 140, 66, 0.1);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 0 4px rgba(255, 140, 66, 0.1);
+            background: var(--bg-tertiary);
+        }
+
+        .input-group input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, rgba(255, 183, 77, 0.2), rgba(255, 215, 0, 0.1));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+
+        .help-box {
+            background: linear-gradient(135deg, rgba(255, 140, 66, 0.08) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 140, 66, 0.2);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .help-box strong {
+            color: var(--accent-orange);
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: var(--accent-orange);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .feature-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .full-width {
+                grid-column: auto;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -17,6 +211,9 @@
                 <a href="{{ url_for('dashboard') }}" class="nav-link">
                     <span class="icon">📊</span> Dashboard
                 </a>
+                <a href="{{ url_for('exchange') }}" class="nav-link">
+                    <span class="icon">💱</span> Exchange Rates
+                </a>
                 <a href="{{ url_for('settings') }}" class="nav-link active">
                     <span class="icon">⚙️</span> Settings
                 </a>
@@ -24,10 +221,6 @@
                     <span class="icon">🚪</span> Logout
                 </a>
             </nav>
-            <div class="sidebar-user">
-                <p class="user-name">{{ current_user.username }}</p>
-                <small class="user-email">{{ current_user.email }}</small>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -37,10 +230,20 @@
                 <div class="header-left">
                     <h1>Settings</h1>
                 </div>
+                <div class="header-right">
+                    <div class="header-profile">
+                        <div class="header-profile-avatar">👤</div>
+                        <div class="header-profile-info">
+                            <p class="header-user-name">{{ current_user.username }}</p>
+                            <small class="header-user-email">{{ current_user.email }}</small>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <!-- Main Container -->
             <div class="container">
+                <!-- Alerts -->
                 {% if success %}
                 <div class="alert alert-success" style="margin-bottom: 30px;">
                     <span style="font-size: 18px; margin-right: 10px;">✓</span>{{ success }}
@@ -53,131 +256,153 @@
                 </div>
                 {% endif %}
 
-                <!-- Section Header -->
-                <div style="margin-bottom: 30px;">
-                    <h2 style="font-size: 20px; color: var(--accent-orange); margin-bottom: 10px;">⚙️ Settings & Configuration</h2>
-                    <p style="color: var(--text-secondary); font-size: 14px;">Manage your account and monitoring preferences</p>
+                <!-- Page Header -->
+                <div style="margin-bottom: 40px;">
+                    <h1 class="section-title">⚙️ Settings & Configuration</h1>
+                    <p class="section-subtitle">Manage your account, monitoring preferences, and blockchain configuration</p>
                 </div>
 
-                <!-- Account Settings -->
-                <div class="settings-section">
-                    <h2>👤 Account Information</h2>
-                    <form method="POST" class="settings-form">
-                        <div class="form-group">
-                            <label for="username">Username</label>
-                            <input 
-                                type="text" 
-                                id="username" 
-                                value="{{ current_user.username }}" 
-                                disabled 
-                                class="input-disabled"
-                            >
-                            <small>Username cannot be changed</small>
+                <!-- Settings Grid -->
+                <div class="settings-grid">
+                    <!-- Account Information Card -->
+                    <div class="settings-card">
+                        <h3>👤 Account Information</h3>
+                        <div class="card-content">
+                            <div class="info-row">
+                                <div class="info-label">Username</div>
+                                <div class="info-value">{{ current_user.username }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Email Address</div>
+                                <div class="info-value">{{ current_user.email }}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Member Since</div>
+                                <div class="info-value">{{ current_user.created_at.strftime('%B %d, %Y') }}</div>
+                            </div>
                         </div>
-
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                value="{{ current_user.email }}" 
-                                disabled 
-                                class="input-disabled"
-                            >
-                            <small>Email cannot be changed at the moment</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="created">Member Since</label>
-                            <input 
-                                type="text" 
-                                id="created" 
-                                value="{{ current_user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" 
-                                disabled 
-                                class="input-disabled"
-                            >
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Algorand Settings -->
-                <div class="settings-section">
-                    <h2>🔗 Algorand Configuration</h2>
-                    <form method="POST" class="settings-form">
-                        <div class="form-group">
-                            <label for="algo_address">Algorand Address</label>
-                            <input 
-                                type="text" 
-                                id="algo_address" 
-                                name="algo_address" 
-                                value="{{ current_user.algo_address or '' }}" 
-                                placeholder="Paste your 58-character Algorand address"
-                                required
-                            >
-                            <small>Enter your Algorand testnet or mainnet address to start monitoring</small>
-                        </div>
-
-                        <div class="address-info">
-                            <h4>📋 Address Format</h4>
-                            <p>A valid Algorand address is exactly 58 characters long and starts with a letter (A-Z).</p>
-                            <p><strong>Example:</strong> M5VOM4OO5PC54SDVXPSPKLZCTACLSZBA4H3LLCSWPK25KV42YZFMFGV4UU</p>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">💾 Save Algorand Address</button>
-                    </form>
-                </div>
-
-                <!-- Monitoring Status -->
-                <div class="settings-section">
-                    <h2>📡 Monitoring Status</h2>
-                    <div class="status-info">
-                        {% if current_user.algo_address %}
-                        <div class="status-item">
-                            <span class="status-label">📍 Current Address:</span>
-                            <code class="status-value">{{ current_user.algo_address }}</code>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">✓ Monitoring:</span>
-                            <span class="status-badge status-enabled">Active</span>
-                        </div>
-                        {% else %}
-                        <div class="no-address">
-                            <p>No Algorand address configured. Configure one above to start monitoring.</p>
-                        </div>
-                        {% endif %}
                     </div>
-                </div>
 
-                <!-- About -->
-                <div class="settings-section info-section">
-                    <h2>ℹ️ About AlgoGuard AI</h2>
-                    <div class="info-content">
-                        <p><strong>AlgoGuard AI</strong> is an intelligent Algorand blockchain monitoring dashboard that tracks your wallet balance, ALGO price, and market metrics in real-time.</p>
-                        
-                        <h3>Features</h3>
-                        <ul>
-                            <li>Real-time Algorand account monitoring</li>
-                            <li>Live ALGO price tracking (USD)</li>
-                            <li>Market cap monitoring</li>
-                            <li>AI-powered risk detection and alerts</li>
-                            <li>Historical data visualization with charts</li>
-                            <li>Multi-user support with account isolation</li>
-                        </ul>
+                    <!-- Algorand Configuration Card -->
+                    <div class="settings-card">
+                        <h3>🔗 Algorand Configuration</h3>
+                        <form method="POST" class="card-content">
+                            <div class="input-group">
+                                <label for="algo_address">Algorand Address</label>
+                                <input 
+                                    type="text" 
+                                    id="algo_address" 
+                                    name="algo_address" 
+                                    value="{{ current_user.algo_address or '' }}" 
+                                    placeholder="Paste your 58-character address"
+                                    required
+                                    maxlength="58"
+                                >
+                                <div class="input-hint">58-character Algorand address (A-Z, 0-9)</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                                💾 Save Address
+                            </button>
+                        </form>
+                    </div>
 
-                        <h3>Data Sources</h3>
-                        <ul>
-                            <li><strong>Blockchain:</strong> Algorand Testnet/Mainnet via AlgoNode</li>
-                            <li><strong>Price Data:</strong> Binance API</li>
-                            <li><strong>Market Data:</strong> CoinGecko API</li>
-                        </ul>
+                    <!-- Monitoring Status Card -->
+                    <div class="settings-card">
+                        <h3>📡 Monitoring Status</h3>
+                        <div class="card-content">
+                            {% if current_user.algo_address %}
+                            <div class="info-row">
+                                <div class="info-label">📍 Active Address</div>
+                                <div class="info-value">{{ current_user.algo_address[:20] }}...{{ current_user.algo_address[-10:] }}</div>
+                            </div>
+                            <div>
+                                <div class="info-label" style="margin-bottom: 8px;">Status</div>
+                                <span class="status-badge">🟢 Actively Monitoring</span>
+                            </div>
+                            {% else %}
+                            <div style="padding: 20px; text-align: center; background: rgba(255, 140, 66, 0.05); border-radius: 8px; border: 1px dashed rgba(255, 140, 66, 0.2);">
+                                <p style="color: var(--text-secondary); font-size: 13px;">
+                                    ⚠️ No address configured. Configure one above to start monitoring.
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
 
-                        <h3>Security</h3>
-                        <ul>
-                            <li>Passwords are hashed and securely stored</li>
-                            <li>Each user can only access their own data</li>
-                            <li>No private keys or sensitive data stored</li>
-                            <li>Read-only blockchain access</li>
-                        </ul>
+                    <!-- Address Format Help Card -->
+                    <div class="settings-card">
+                        <h3>📋 Address Format Guide</h3>
+                        <div class="card-content">
+                            <div class="help-box">
+                                <strong>Valid Algorand Address Characteristics:</strong>
+                                <ul style="margin: 10px 0 0 20px; padding: 0;">
+                                    <li>Exactly 58 characters long</li>
+                                    <li>Contains letters A-Z (uppercase)</li>
+                                    <li>Contains numbers 0-9</li>
+                                    <li>Starts with a letter</li>
+                                </ul>
+                            </div>
+                            <div class="help-box" style="margin-top: 12px; border-color: rgba(255, 215, 0, 0.3); background: rgba(255, 215, 0, 0.05);">
+                                <strong style="color: var(--accent-gold);">Example:</strong>
+                                <div style="margin-top: 8px; font-family: 'Courier New', monospace; word-break: break-all; color: var(--accent-gold); font-size: 12px;">
+                                    M5VOM4OO5PC54SDVXPSPKLZCTACLSZBA4H3LLCSWPK25KV42YZFMFGV4UU
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Card (Full Width) -->
+                    <div class="settings-card full-width">
+                        <h3>✨ AlgoGuard AI Features</h3>
+                        <div class="features-list">
+                            <div class="feature-item">
+                                <div class="feature-icon">📊</div>
+                                <div class="feature-text"><strong>Real-time Monitoring:</strong> Live tracking of your Algorand wallet balance and account status</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">💰</div>
+                                <div class="feature-text"><strong>Price Tracking:</strong> Current ALGO/USD rates from Binance with historical data</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">📈</div>
+                                <div class="feature-text"><strong>Market Metrics:</strong> Algorand market cap and blockchain round information</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">⚡</div>
+                                <div class="feature-text"><strong>AI Alerts:</strong> Intelligent notifications based on balance thresholds and market conditions</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">📋</div>
+                                <div class="feature-text"><strong>History Tracking:</strong> Complete balance and price history with visual charts</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">🔒</div>
+                                <div class="feature-text"><strong>Secure:</strong> Read-only blockchain access, no private key storage</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About Card (Full Width) -->
+                    <div class="settings-card full-width">
+                        <h3>ℹ️ About AlgoGuard AI</h3>
+                        <div class="card-content" style="gap: 12px;">
+                            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px;">
+                                <strong style="color: var(--accent-orange);">AlgoGuard AI</strong> is an intelligent Algorand blockchain monitoring dashboard that provides real-time insights into your wallet and the Algorand ecosystem.
+                            </p>
+                            <div class="help-box">
+                                <strong>Data Sources</strong><br>
+                                • <strong>Blockchain:</strong> Algorand Testnet/Mainnet via AlgoNode<br>
+                                • <strong>Price Data:</strong> Binance API<br>
+                                • <strong>Market Data:</strong> CoinGecko API
+                            </div>
+                            <div class="help-box" style="border-color: rgba(255, 215, 0, 0.3); background: rgba(255, 215, 0, 0.05);">
+                                <strong style="color: var(--accent-gold);">Security</strong><br>
+                                • Passwords encrypted with bcrypt<br>
+                                • User data isolation<br>
+                                • No sensitive data stored<br>
+                                • Read-only blockchain access
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
