@@ -55,8 +55,18 @@
                 <!-- Status Section -->
                 {% if current_user.algo_address %}
                 <div class="status-section">
-                    <h2>Your Algorand Account</h2>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <h2 style="margin: 0; flex: 1;">Your Algorand Account</h2>
+                        <span style="background: #00ff88; height: 8px; width: 8px; border-radius: 50%; animation: pulse 2s infinite;"></span>
+                        <span style="color: var(--accent-green); font-size: 12px;">Active</span>
+                    </div>
                     <p class="account-address">Address: <code>{{ current_user.algo_address }}</code></p>
+                </div>
+
+                <!-- Stats Section Header -->
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 20px; color: var(--accent-orange); margin-bottom: 10px;">📊 Real-time Metrics</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Monitor your Algorand holdings and market data</p>
                 </div>
 
                 <!-- Stats Grid -->
@@ -105,13 +115,15 @@
 
                 <!-- Chart Section -->
                 <div class="chart-section">
-                    <h2>Price History</h2>
+                    <h2>📈 Price History</h2>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 15px;">Historical ALGO/USD price trends</p>
                     <canvas id="priceChart"></canvas>
                 </div>
 
                 <!-- Alerts Section -->
                 <div class="alerts-section">
-                    <h2>AI Alerts</h2>
+                    <h2>⚡ AI Alerts</h2>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 15px;">Autonomous monitoring alerts</p>
                     <div class="alerts-container" id="alerts-container">
                         <div class="alert-empty">No alerts at the moment</div>
                     </div>
@@ -119,7 +131,8 @@
 
                 <!-- History Section -->
                 <div class="history-section">
-                    <h2>Balance History</h2>
+                    <h2>📋 Balance History</h2>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 15px;">Your account balance over time</p>
                     <div class="history-container" id="history-container">
                         <p class="history-empty">No history available yet</p>
                     </div>
@@ -258,12 +271,12 @@
                         datasets: [{
                             label: 'ALGO Price (USD)',
                             data: prices,
-                            borderColor: '#00d4ff',
-                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            borderColor: '#ff8c42',
+                            backgroundColor: 'rgba(255, 140, 66, 0.1)',
                             tension: 0.4,
                             fill: true,
                             pointRadius: 4,
-                            pointBackgroundColor: '#00d4ff',
+                            pointBackgroundColor: '#ff8c42',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointHoverRadius: 6

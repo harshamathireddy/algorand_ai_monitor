@@ -42,20 +42,26 @@
             <!-- Main Container -->
             <div class="container">
                 {% if success %}
-                <div class="alert alert-success">
-                    ✓ {{ success }}
+                <div class="alert alert-success" style="margin-bottom: 30px;">
+                    <span style="font-size: 18px; margin-right: 10px;">✓</span>{{ success }}
                 </div>
                 {% endif %}
 
                 {% if error %}
-                <div class="alert alert-error">
-                    ✗ {{ error }}
+                <div class="alert alert-error" style="margin-bottom: 30px;">
+                    <span style="font-size: 18px; margin-right: 10px;">✗</span>{{ error }}
                 </div>
                 {% endif %}
 
+                <!-- Section Header -->
+                <div style="margin-bottom: 30px;">
+                    <h2 style="font-size: 20px; color: var(--accent-orange); margin-bottom: 10px;">⚙️ Settings & Configuration</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Manage your account and monitoring preferences</p>
+                </div>
+
                 <!-- Account Settings -->
                 <div class="settings-section">
-                    <h2>Account Information</h2>
+                    <h2>👤 Account Information</h2>
                     <form method="POST" class="settings-form">
                         <div class="form-group">
                             <label for="username">Username</label>
@@ -96,7 +102,7 @@
 
                 <!-- Algorand Settings -->
                 <div class="settings-section">
-                    <h2>Algorand Configuration</h2>
+                    <h2>🔗 Algorand Configuration</h2>
                     <form method="POST" class="settings-form">
                         <div class="form-group">
                             <label for="algo_address">Algorand Address</label>
@@ -112,26 +118,26 @@
                         </div>
 
                         <div class="address-info">
-                            <h4>Address Format</h4>
+                            <h4>📋 Address Format</h4>
                             <p>A valid Algorand address is exactly 58 characters long and starts with a letter (A-Z).</p>
                             <p><strong>Example:</strong> M5VOM4OO5PC54SDVXPSPKLZCTACLSZBA4H3LLCSWPK25KV42YZFMFGV4UU</p>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Save Algorand Address</button>
+                        <button type="submit" class="btn btn-primary">💾 Save Algorand Address</button>
                     </form>
                 </div>
 
                 <!-- Monitoring Status -->
                 <div class="settings-section">
-                    <h2>Monitoring Status</h2>
+                    <h2>📡 Monitoring Status</h2>
                     <div class="status-info">
                         {% if current_user.algo_address %}
                         <div class="status-item">
-                            <span class="status-label">Current Address:</span>
+                            <span class="status-label">📍 Current Address:</span>
                             <code class="status-value">{{ current_user.algo_address }}</code>
                         </div>
                         <div class="status-item">
-                            <span class="status-label">Monitoring:</span>
+                            <span class="status-label">✓ Monitoring:</span>
                             <span class="status-badge status-enabled">Active</span>
                         </div>
                         {% else %}
@@ -144,7 +150,7 @@
 
                 <!-- About -->
                 <div class="settings-section info-section">
-                    <h2>About AlgoGuard AI</h2>
+                    <h2>ℹ️ About AlgoGuard AI</h2>
                     <div class="info-content">
                         <p><strong>AlgoGuard AI</strong> is an intelligent Algorand blockchain monitoring dashboard that tracks your wallet balance, ALGO price, and market metrics in real-time.</p>
                         
