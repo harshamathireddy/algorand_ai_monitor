@@ -155,7 +155,49 @@
     </div>
 
     <script>
-        let priceChart = null;
+        let lastPrice = 0;
+        let priceChange = 0;
+        
+        async function updateLivePrice() {
+            try {
+                const response = await fetch('/api/live-price');
+                const data = await response.json();
+                
+                if (data.success && data.price) {
+                    const currentPrice = data.price;
+                    const currentPriceElement = document.getElementById('header-price');
+                    
+                    if (currentPriceElement) {
+                        // Calculate price change
+                        if (lastPrice > 0) {
+                            priceChange = ((currentPrice - lastPrice) / lastPrice) * 100;
+                        }
+                        
+                        // Update price display with color coding
+                        const priceText = `$${currentPrice.toFixed(4)}`;
+                        const changeText = lastPrice > 0 ? ` (${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%)` : '';
+                        
+                        currentPriceElement.innerHTML = `${priceText}<span class="price-change ${priceChange >= 0 ? 'positive' : 'negative'}">${changeText}</span>`;
+                        
+                        // Update sync status
+                        const syncElement = document.getElementById('sync-text');
+                        if (syncElement) {
+                            syncElement.textContent = 'Live';
+                            syncElement.style.color = '#4CAF50';
+                        }
+                        
+                        lastPrice = currentPrice;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching live price:', error);
+                const syncElement = document.getElementById('sync-text');
+                if (syncElement) {
+                    syncElement.textContent = 'Sync Error';
+                    syncElement.style.color = '#f44336';
+                }
+            }
+        }
         
         async function fetchData() {
             try {
@@ -435,9 +477,16 @@
         // Initial fetch and set up polling
         fetchData();
         updatePriceChart();
+        updateLivePrice();
         
-        setInterval(fetchData, 3000);
+        // Real-time price updates every 5 seconds
+        setInterval(updateLivePrice, 5000);
+        
+        // Chart updates every 30 seconds
         setInterval(updatePriceChart, 30000);
+        
+        // Data updates every 3 seconds
+        setInterval(fetchData, 3000);
     </script>
 </body>
 </html>

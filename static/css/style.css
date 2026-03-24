@@ -192,6 +192,23 @@ body {
     color: var(--accent-gold);
     font-weight: 700;
     font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.price-change {
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.price-change.positive {
+    color: #4CAF50;
+}
+
+.price-change.negative {
+    color: #f44336;
 }
 
 .sync-status {

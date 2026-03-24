@@ -6,7 +6,7 @@ from algosdk.v2client import algod
 import threading
 import time
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 
 app = Flask(__name__)
@@ -83,7 +83,7 @@ last_price_update = {}
 def run_ai_monitor():
     """Background task to monitor all users' Algorand addresses."""
     global last_price_update
-    price_update_interval = 30
+    price_update_interval = 5  # Update price every 5 seconds for real-time data
     
     while monitoring_active:
         try:
@@ -104,14 +104,22 @@ def run_ai_monitor():
                     print(f"⚠ Price fetch failed: {e}")
                 
                 try:
-                    # Get market cap from CoinGecko
+                    # Get market cap from CoinGecko (with rate limiting protection)
                     cg_response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=algorand&vs_currencies=usd&include_market_cap=true", timeout=10)
                     cg_response.raise_for_status()
                     cg_data = cg_response.json()
                     global_market_cap = cg_data.get("algorand", {}).get("usd_market_cap", 10000000000)
                     print(f"✓ Market Cap: ${global_market_cap:.0f}")
+                except requests.exceptions.RequestException as e:
+                    if hasattr(e.response, 'status_code') and e.response.status_code == 429:
+                        # Rate limited, use cached value
+                        global_market_cap = 774203103  # Use a reasonable cached value
+                        print(f"⚠ Market cap rate limited, using cached value: ${global_market_cap:.0f}")
+                    else:
+                        global_market_cap = 774203103
+                        print(f"⚠ Market cap fetch failed: {e}")
                 except Exception as e:
-                    global_market_cap = 10000000000
+                    global_market_cap = 774203103
                     print(f"⚠ Market cap fetch failed: {e}")
                 
                 last_price_update[cache_key] = current_time
@@ -191,7 +199,7 @@ def calculate_risk_score(balance):
 def check_and_create_alerts(user_id, balance, price):
     """Check balance and create alerts if needed."""
     # Check if identical alert exists in last 10 minutes
-    ten_min_ago = datetime.utcnow() - timedelta(minutes=10)
+    ten_min_ago = datetime.now(timezone.utc) - timedelta(minutes=10)
     
     if balance < 50:
         msg = f"Critical: Balance very low at {balance:.2f} ALGO"
@@ -401,6 +409,39 @@ def price_history():
         for p in prices
     ]
     return jsonify(data)
+
+@app.route('/api/live-price')
+def live_price():
+    """Get current live ALGO price from Binance."""
+    try:
+        # Get price from Binance
+        binance_response = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=ALGOUSDT", timeout=5)
+        binance_response.raise_for_status()
+        binance_data = binance_response.json()
+        current_price = float(binance_data.get("price", 0.25))
+        
+        # Get market cap from CoinGecko
+        try:
+            cg_response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=algorand&vs_currencies=usd&include_market_cap=true", timeout=5)
+            cg_response.raise_for_status()
+            cg_data = cg_response.json()
+            market_cap = cg_data.get("algorand", {}).get("usd_market_cap", 10000000000)
+        except Exception as e:
+            market_cap = 10000000000
+        
+        return jsonify({
+            'success': True,
+            'price': current_price,
+            'market_cap': market_cap,
+            'timestamp': datetime.utcnow().timestamp()
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'price': 0.25,
+            'market_cap': 10000000000
+        })
 
 # Error handlers
 @app.errorhandler(404)
